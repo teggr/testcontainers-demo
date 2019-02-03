@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Test Containers Demo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<h1>Notifications</h1>
+    <table>
+    	<thead>
+    		<tr>
+    			<th>ID</th>
+    			<th>Message</th>
+    			<th>Source</th>
+    		</tr>
+    	</thead>
+    	<tbody>
+    		<tr th:each="notification : ${notifications}">
+    			<td th:text="${notification.id}" />
+    			<td th:text="${notification.message}" />
+    			<td th:text="${notification.source}" />
+    		</tr>
+    	</tbody>
+    </table>
+</body>
+</html>
