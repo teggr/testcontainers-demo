@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: "postgres:latest"
+    ports:
+      - "5432:5432"
+    environment: 
+      - "POSTGRES_PASSWORD=mysecretpassword"
+    volumes:
+      - testcontainers-demo-vol-dev:/var/lib/postgresql/data
+  inbound:
+    image: "rmohr/activemq:latest"
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+  outbound:
+    image: "rabbitmq:management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+volumes:
+  testcontainers-demo-vol-dev:
