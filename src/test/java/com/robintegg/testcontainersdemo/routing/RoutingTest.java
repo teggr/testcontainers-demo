@@ -20,7 +20,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.robintegg.testcontainersdemo.inbound.JMSNotification;
@@ -36,11 +35,11 @@ public class RoutingTest {
 
 	@ClassRule
 	public static GenericContainer<?> activeMQContainer = new GenericContainer<>("rmohr/activemq:latest")
-			.withExposedPorts(61616, 8161).waitingFor(Wait.forListeningPort());
+			.withExposedPorts(61616);
 
 	@ClassRule
 	public static GenericContainer<?> rabbitMQContainer = new GenericContainer<>("rabbitmq:management")
-			.withExposedPorts(5672, 15672).waitingFor(Wait.forListeningPort());
+			.withExposedPorts(5672);
 
 	@Autowired
 	private JmsTemplate jmsTemplate;
