@@ -1,4 +1,4 @@
-package com.robintegg.testcontainersdemo.routing;
+package com.robintegg.testcontainersdemo;
 
 import java.util.ArrayList;
 import java.util.List;

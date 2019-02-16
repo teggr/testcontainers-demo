@@ -15,7 +15,7 @@
     		</tr>
     	</thead>
     	<tbody>
-    		<tr th:each="notification : ${notifications}">
+    		<tr class="row-notification" th:each="notification : ${notifications}">
     			<td th:text="${notification.id}" />
     			<td th:text="${notification.message}" />
     			<td th:text="${notification.source}" />

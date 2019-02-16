@@ -1,4 +1,4 @@
-package com.robintegg.testcontainersdemo.routing;
+package com.robintegg.testcontainersdemo;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;

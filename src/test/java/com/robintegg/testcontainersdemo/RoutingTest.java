@@ -1,4 +1,4 @@
-package com.robintegg.testcontainersdemo.routing;
+package com.robintegg.testcontainersdemo;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -23,6 +23,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.robintegg.testcontainersdemo.inbound.JMSNotification;
+import com.robintegg.testcontainersdemo.routing.Notification;
+import com.robintegg.testcontainersdemo.routing.NotificationRepository;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
