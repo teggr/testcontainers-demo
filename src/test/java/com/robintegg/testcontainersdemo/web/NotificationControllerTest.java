@@ -25,7 +25,7 @@ import com.robintegg.testcontainersdemo.routing.Notification;
 import com.robintegg.testcontainersdemo.routing.NotificationQueryService;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(NotificationController.class)
+@WebMvcTest(NotificationControllerTest.class)
 public class NotificationControllerTest {
 
 	@Autowired
