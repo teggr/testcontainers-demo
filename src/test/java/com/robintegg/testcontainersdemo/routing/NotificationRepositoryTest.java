@@ -4,9 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
@@ -14,65 +12,66 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.robintegg.testcontainersdemo.DemoApplicationTestPropertyValues;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-@ContextConfiguration(initializers = { NotificationRepositoryTest.Initializer.class })
-public class NotificationRepositoryTest {
+@ContextConfiguration(initializers = {NotificationRepositoryTest.Initializer.class})
+@Testcontainers
+class NotificationRepositoryTest {
 
-	@ClassRule
-	public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
+    @Container
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
 
-	@Autowired
-	private NotificationRepository repository;
+    @Autowired
+    NotificationRepository repository;
 
-	@Test
-	public void shouldStoreEachNotification() {
+    @Test
+    void shouldStoreEachNotification() {
 
-		// given
-		repository.save(new Notification("message1", "test"));
-		repository.save(new Notification("message2", "test"));
+        // given
+        repository.save(new Notification("message1", "test"));
+        repository.save(new Notification("message2", "test"));
 
-		// when
-		long count = repository.count();
+        // when
+        long count = repository.count();
 
-		// then
-		assertThat(count, is(2L));
+        // then
+        assertThat(count, is(2L));
 
-	}
+    }
 
-	@Test
-	public void shouldStoreEachNotificationWithAUniqueIdentifier() {
+    @Test
+    void shouldStoreEachNotificationWithAUniqueIdentifier() {
 
-		// given
-		Notification n1 = repository.save(new Notification("message3", "test"));
-		Notification n2 = repository.save(new Notification("message4", "test"));
+        // given
+        Notification n1 = repository.save(new Notification("message3", "test"));
+        Notification n2 = repository.save(new Notification("message4", "test"));
 
-		// when
-		Notification persistedNotification1 = repository.getOne(n1.getId());
-		Notification persistedNotification2 = repository.getOne(n2.getId());
+        // when
+        Notification persistedNotification1 = repository.getOne(n1.getId());
+        Notification persistedNotification2 = repository.getOne(n2.getId());
 
-		// then
-		assertThat(persistedNotification1, equalTo(n1));
-		assertThat(persistedNotification2, equalTo(n2));
+        // then
+        assertThat(persistedNotification1, equalTo(n1));
+        assertThat(persistedNotification2, equalTo(n2));
 
-	}
+    }
 
-	static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-		@Override
-		public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+        @Override
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
 
-			DemoApplicationTestPropertyValues.using(postgreSQLContainer)
-					.applyTo(configurableApplicationContext.getEnvironment());
+            DemoApplicationTestPropertyValues.using(postgreSQLContainer)
+                    .applyTo(configurableApplicationContext.getEnvironment());
 
-		}
+        }
 
-	}
+    }
 
 }

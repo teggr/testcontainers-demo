@@ -7,10 +7,7 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 import java.util.List;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -30,86 +27,88 @@ import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-@ContextConfiguration(initializers = { UITest.Initializer.class }, classes = RabbitMqTestConfiguration.class)
-public class UITest {
+@ContextConfiguration(initializers = {UITest.Initializer.class}, classes = RabbitMqTestConfiguration.class)
+@Testcontainers
+class UITest {
 
-	@LocalServerPort
-	private int port;
+    @LocalServerPort
+    int port;
 
-	// @formatter:off
-	@Rule
-	public BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
-			.withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
-			.withCapabilities(new ChromeOptions());
-	// @formatter:on
+    // @formatter:off
+    @Container
+    BrowserWebDriverContainer chrome = new BrowserWebDriverContainer()
+            .withRecordingMode(VncRecordingMode.RECORD_FAILING, new File("./target/"))
+            .withCapabilities(new ChromeOptions());
+    // @formatter:on
 
-	@ClassRule
-	public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
+    @Container
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
 
-	@ClassRule
-	public static GenericContainer<?> activeMQContainer = new GenericContainer<>("rmohr/activemq:latest")
-			.withExposedPorts(61616);
+    @Container
+    static GenericContainer<?> activeMQContainer = new GenericContainer<>("rmohr/activemq:latest")
+            .withExposedPorts(61616);
 
-	@ClassRule
-	public static GenericContainer<?> rabbitMQContainer = new GenericContainer<>("rabbitmq:management")
-			.withExposedPorts(5672);
+    @Container
+    public static GenericContainer<?> rabbitMQContainer = new GenericContainer<>("rabbitmq:management")
+            .withExposedPorts(5672);
 
-	@Test
-	public void shouldSuccessfullyPassThisTestUsingTheRemoteDriver() throws InterruptedException {
+    @Test
+    void shouldSuccessfullyPassThisTestUsingTheRemoteDriver() throws InterruptedException {
 
-		RemoteWebDriver driver = chrome.getWebDriver();
+        RemoteWebDriver driver = chrome.getWebDriver();
 
-		System.out.println("Selenium remote URL is: " + chrome.getSeleniumAddress());
-		System.out.println("VNC URL is: " + chrome.getVncAddress());
+        System.out.println("Selenium remote URL is: " + chrome.getSeleniumAddress());
+        System.out.println("VNC URL is: " + chrome.getVncAddress());
 
-		String url = "http://host.docker.internal:" + port + "/";
-		System.out.println("Spring Boot URL is: " + url);
-		driver.get(url);
+        String url = "http://host.docker.internal:" + port + "/";
+        System.out.println("Spring Boot URL is: " + url);
+        driver.get(url);
 
-		List<WebElement> results = new WebDriverWait(driver, 15)
-				.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.tagName("h1")));
+        List<WebElement> results = new WebDriverWait(driver, 15)
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.tagName("h1")));
 
-		assertThat(results.size(), is(1));
-		assertThat(results.get(0).getText(), containsString("Notifications"));
+        assertThat(results.size(), is(1));
+        assertThat(results.get(0).getText(), containsString("Notifications"));
 
-	}
+    }
 
-	@Test
-	public void shouldFailThisTestUsingTheRemoteDriverAndGenerateAVideoRecording() throws InterruptedException {
+    @Test
+    void shouldFailThisTestUsingTheRemoteDriverAndGenerateAVideoRecording() throws InterruptedException {
 
-		RemoteWebDriver driver = chrome.getWebDriver();
+        RemoteWebDriver driver = chrome.getWebDriver();
 
-		System.out.println("Selenium remote URL is: " + chrome.getSeleniumAddress());
-		System.out.println("VNC URL is: " + chrome.getVncAddress());
+        System.out.println("Selenium remote URL is: " + chrome.getSeleniumAddress());
+        System.out.println("VNC URL is: " + chrome.getVncAddress());
 
-		String url = "http://host.docker.internal:" + port + "/";
-		System.out.println("Spring Boot URL is: " + url);
-		driver.get(url);
+        String url = "http://host.docker.internal:" + port + "/";
+        System.out.println("Spring Boot URL is: " + url);
+        driver.get(url);
 
-		// added for effect when viewing the video
-		Thread.currentThread().sleep(1000);
+        // added for effect when viewing the video
+        Thread.currentThread().sleep(1000);
 
-		List<WebElement> results = new WebDriverWait(driver, 15)
-				.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.tagName("h1")));
+        List<WebElement> results = new WebDriverWait(driver, 15)
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.tagName("h1")));
 
-		assertThat(results.size(), is(2));
+        assertThat(results.size(), is(2));
 
-	}
+    }
 
-	static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-		@Override
-		public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+        @Override
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
 
-			DemoApplicationTestPropertyValues.using(postgreSQLContainer, activeMQContainer, rabbitMQContainer)
-					.applyTo(configurableApplicationContext.getEnvironment());
+            DemoApplicationTestPropertyValues.using(postgreSQLContainer, activeMQContainer, rabbitMQContainer)
+                    .applyTo(configurableApplicationContext.getEnvironment());
 
-		}
+        }
 
-	}
+    }
 
 }

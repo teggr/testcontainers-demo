@@ -1,33 +1,32 @@
 package com.robintegg.testcontainersdemo;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(initializers = DemoApplicationTests.Initializer.class)
-public class DemoApplicationTests {
+@Testcontainers
+class DemoApplicationTests {
 
-	@ClassRule
-	public static GenericContainer postgres = new GenericContainer("postgres")
+	@Container
+	static GenericContainer postgres = new GenericContainer("postgres")
 			.withEnv("POSTGRES_PASSWORD", "mysecretpassword").withExposedPorts(5432);
 
-	@ClassRule
-	public static GenericContainer activemq = new GenericContainer("rmohr/activemq").withExposedPorts(61616);
+	@Container
+	static GenericContainer activemq = new GenericContainer("rmohr/activemq").withExposedPorts(61616);
 
-	@ClassRule
-	public static GenericContainer rabbitmq = new GenericContainer("rabbitmq").withExposedPorts(5672);
+	@Container
+	static GenericContainer rabbitmq = new GenericContainer("rabbitmq").withExposedPorts(5672);
 
 	@Test
-	public void contextLoads() {
+	void contextLoads() {
 	}
 
 	static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
