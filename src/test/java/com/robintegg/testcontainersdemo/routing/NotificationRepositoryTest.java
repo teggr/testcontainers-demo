@@ -1,26 +1,23 @@
 package com.robintegg.testcontainersdemo.routing;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-
+import com.robintegg.testcontainersdemo.DemoApplicationTestPropertyValues;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import com.robintegg.testcontainersdemo.DemoApplicationTestPropertyValues;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-@ContextConfiguration(initializers = {NotificationRepositoryTest.Initializer.class})
 @Testcontainers
 class NotificationRepositoryTest {
 
@@ -29,6 +26,11 @@ class NotificationRepositoryTest {
 
     @Autowired
     NotificationRepository repository;
+
+    @DynamicPropertySource
+    static void registerDynamicProperties(DynamicPropertyRegistry registry) {
+        DemoApplicationTestPropertyValues.populateRegistryFromPostgresContainer(registry, postgreSQLContainer);
+    }
 
     @Test
     void shouldStoreEachNotification() {
@@ -59,18 +61,6 @@ class NotificationRepositoryTest {
         // then
         assertThat(persistedNotification1, equalTo(n1));
         assertThat(persistedNotification2, equalTo(n2));
-
-    }
-
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-
-            DemoApplicationTestPropertyValues.using(postgreSQLContainer)
-                    .applyTo(configurableApplicationContext.getEnvironment());
-
-        }
 
     }
 

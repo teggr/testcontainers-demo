@@ -1,12 +1,5 @@
 package com.robintegg.testcontainersdemo;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.io.File;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -19,10 +12,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.BrowserWebDriverContainer;
 import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 import org.testcontainers.containers.GenericContainer;
@@ -30,9 +22,16 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.File;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-@ContextConfiguration(initializers = {UITest.Initializer.class}, classes = RabbitMqTestConfiguration.class)
+@ContextConfiguration(classes = RabbitMqTestConfiguration.class)
 @Testcontainers
 class UITest {
 
@@ -56,6 +55,12 @@ class UITest {
     @Container
     public static GenericContainer<?> rabbitMQContainer = new GenericContainer<>("rabbitmq:management")
             .withExposedPorts(5672);
+
+
+    @DynamicPropertySource
+    static void registerDynamicProperties(DynamicPropertyRegistry registry) {
+        DemoApplicationTestPropertyValues.populateRegistryFromContainers(registry, postgreSQLContainer, activeMQContainer, rabbitMQContainer);
+    }
 
     @Test
     void shouldSuccessfullyPassThisTestUsingTheRemoteDriver() throws InterruptedException {
@@ -96,18 +101,6 @@ class UITest {
                 .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.tagName("h1")));
 
         assertThat(results.size(), is(2));
-
-    }
-
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-
-            DemoApplicationTestPropertyValues.using(postgreSQLContainer, activeMQContainer, rabbitMQContainer)
-                    .applyTo(configurableApplicationContext.getEnvironment());
-
-        }
 
     }
 

@@ -1,39 +1,28 @@
 package com.robintegg.testcontainersdemo;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.test.context.DynamicPropertyRegistry;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class DemoApplicationTestPropertyValues {
 
-	public static TestPropertyValues using(PostgreSQLContainer<?> postgreSQLContainer,
-			GenericContainer<?> activeMQContainer, GenericContainer<?> rabbitMQContainer) {
-		List<String> pairs = new ArrayList<>();
+    public static void populateRegistryFromContainers(DynamicPropertyRegistry registry,
+                                                             PostgreSQLContainer<?> postgreSQLContainer,
+                                                             GenericContainer<?> activeMQContainer, GenericContainer<?> rabbitMQContainer) {
 
-		// postgres
-		pairs.add("spring.datasource.url=" + postgreSQLContainer.getJdbcUrl());
-		pairs.add("spring.datasource.username=" + postgreSQLContainer.getUsername());
-		pairs.add("spring.datasource.password=" + postgreSQLContainer.getPassword());
-		// activemq
-		pairs.add("spring.activemq.broker-url=tcp://localhost:" + activeMQContainer.getMappedPort(61616));
-		// rabbitmq
-		pairs.add("spring.rabbitmq.port=" + rabbitMQContainer.getMappedPort(5672));
+        populateRegistryFromPostgresContainer(registry, postgreSQLContainer);
 
-		return TestPropertyValues.of(pairs);
-	}
+        // activemq
+        registry.add("spring.activemq.broker-url", () -> "tcp://localhost:" + activeMQContainer.getMappedPort(61616));
 
-	public static TestPropertyValues using(PostgreSQLContainer<?> postgreSQLContainer) {
-		List<String> pairs = new ArrayList<>();
+        // rabbitmq
+        registry.add("spring.rabbitmq.port", () -> rabbitMQContainer.getMappedPort(5672));
 
-		// postgres
-		pairs.add("spring.datasource.url=" + postgreSQLContainer.getJdbcUrl());
-		pairs.add("spring.datasource.username=" + postgreSQLContainer.getUsername());
-		pairs.add("spring.datasource.password=" + postgreSQLContainer.getPassword());
+    }
 
-		return TestPropertyValues.of(pairs);
-	}
-
+    public static void populateRegistryFromPostgresContainer(DynamicPropertyRegistry registry, PostgreSQLContainer<?> postgreSQLContainer) {
+        registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
+        registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
+    }
 }

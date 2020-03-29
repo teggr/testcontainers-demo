@@ -1,34 +1,32 @@
 package com.robintegg.testcontainersdemo;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.robintegg.testcontainersdemo.inbound.JMSNotification;
+import com.robintegg.testcontainersdemo.routing.Notification;
+import com.robintegg.testcontainersdemo.routing.NotificationRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.robintegg.testcontainersdemo.inbound.JMSNotification;
-import com.robintegg.testcontainersdemo.routing.Notification;
-import com.robintegg.testcontainersdemo.routing.NotificationRepository;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-@ContextConfiguration(initializers = {RoutingTest.Initializer.class}, classes = RabbitMqTestConfiguration.class)
+@ContextConfiguration(classes = RabbitMqTestConfiguration.class)
 @Testcontainers
 class RoutingTest {
 
@@ -54,6 +52,11 @@ class RoutingTest {
 
     @Autowired
     NotificationRepository notificationRepository;
+
+    @DynamicPropertySource
+    static void registerDynamicProperties(DynamicPropertyRegistry registry) {
+        DemoApplicationTestPropertyValues.populateRegistryFromContainers(registry, postgreSQLContainer, activeMQContainer, rabbitMQContainer);
+    }
 
     @Test
     void shouldStoreANotifcationFromTheJmsQueueAndForwardToTheRabbitMQExchange() throws Exception {
@@ -96,18 +99,6 @@ class RoutingTest {
         Notification notification = rabbitTemplate.receiveAndConvert("testcontainers.test.queue", 1000,
                 notificationTypeRef);
         return notification;
-    }
-
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
-        @Override
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-
-            DemoApplicationTestPropertyValues.using(postgreSQLContainer, activeMQContainer, rabbitMQContainer)
-                    .applyTo(configurableApplicationContext.getEnvironment());
-
-        }
-
     }
 
 }

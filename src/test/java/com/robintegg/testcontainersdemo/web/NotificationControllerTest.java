@@ -1,16 +1,7 @@
 package com.robintegg.testcontainersdemo.web;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import com.robintegg.testcontainersdemo.routing.Notification;
+import com.robintegg.testcontainersdemo.routing.NotificationQueryService;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -19,8 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import com.robintegg.testcontainersdemo.routing.Notification;
-import com.robintegg.testcontainersdemo.routing.NotificationQueryService;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.mockito.Mockito.when;
 
 @WebMvcTest(NotificationControllerTest.class)
 class NotificationControllerTest {
@@ -42,7 +39,7 @@ class NotificationControllerTest {
 
         // then
         List<WebElement> tableRows = webDriver.findElements(By.className("row-notification"));
-        assertTrue(tableRows.isEmpty());
+        assertThat(tableRows, is(empty()));
 
     }
 
